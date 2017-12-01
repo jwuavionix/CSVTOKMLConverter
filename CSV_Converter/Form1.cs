@@ -18,15 +18,15 @@ namespace CSV_Converter
         public Form1()
         {
             InitializeComponent();
-            //label1.Text = "testing";
         }
 
         private void BtnBrowse_Click(object sender, EventArgs e)
         {
-            DialogResult result = openFileDialog1.ShowDialog(); // Show the dialog.
+            DialogResult result = openFileDialogInput.ShowDialog(); // Show the dialog.
             if (result == DialogResult.OK) // Test result.
             {
-                tbInput.Text = openFileDialog1.FileName;
+                tbInput.Text = openFileDialogInput.FileName;
+                //convenience: use regex to keep directory and change file name for default output
 
                 /*
                 string file = openFileDialog1.FileName;
@@ -48,10 +48,10 @@ namespace CSV_Converter
 
         private void BtnOutputBrowse_Click(object sender, EventArgs e)
         {
-            DialogResult result = openFileDialog2.ShowDialog(); // Show the dialog.
+            DialogResult result = saveFileDialogOutput.ShowDialog(); // Show the dialog.
             if (result == DialogResult.OK) // Test result.
             {
-                tbOutput.Text = openFileDialog1.FileName;
+                tbOutput.Text = saveFileDialogOutput.FileName;
             }
 
             /*
@@ -61,14 +61,15 @@ namespace CSV_Converter
                    new CsvReader(new StreamReader("in.csv"), true))
             {
                 int fieldCount = csv.FieldCount;
-                label2.Text = fieldCount.ToString();
+                lblFeedback.Text = fieldCount.ToString();
                 
                 string[] headers = csv.GetFieldHeaders();
                 while (csv.ReadNextRecord())
                 {
                     for (int i = 0; i < fieldCount; i++)
                     temp = string.Format("{0} = {1};", headers[i], csv[i]);
-                    label1.Text = temp; // string.Format("{0} = {1};", csv[i], csv[i]);
+                    lblFeedback.Text += " " + temp; // string.Format("{0} = {1};", csv[i], csv[i]);
+                    lblFeedback.Text += " done";
 
                     //writer.Write("stuff");
                 }
@@ -80,13 +81,66 @@ namespace CSV_Converter
 
         private void BtnConvert_Click(object sender, EventArgs e)
         {
+            lblFeedback.Text = "Working...";
             String input = tbInput.Text;
             String output = tbOutput.Text;
 
             if (input != "" && output != "")
             {
+                CsvReader csv = new CsvReader(new StreamReader(input), true);
                 var xmlWriter = XmlWriter.Create(output);
                 xmlWriter.WriteStartDocument();
+                xmlWriter.WriteStartElement("root");
+                //lblFeedback.Text = "root";
+                String point = "";
+                bool isCoord = false;
+                bool hasCoord = false;
+
+                int fieldCount = csv.FieldCount;
+                string[] headers = csv.GetFieldHeaders();
+                for (int i = 0; i < fieldCount; i++)
+                {
+                    headers[i] = headers[i].Replace(":", "-");
+                }
+
+                while (csv.ReadNextRecord())
+                {
+                    xmlWriter.WriteStartElement("Placemark");
+
+                    for (int i = 0; i < fieldCount; i++)
+                    {
+                        isCoord = headers[i].Contains("GPS--Lat") ? true : isCoord;
+                        isCoord = headers[i].Contains("GPS--Lon") ? true : isCoord;
+                        isCoord = headers[i].Contains("GPS--Alt") ? true : isCoord;
+                        if(isCoord)
+                        {
+                            point += csv[i] + ", ";
+                            isCoord = false;
+                        }
+                        //xmlWriter.WriteStartElement(headers[i]);
+                        //xmlWriter.WriteAttributeString(headers[i], csv[i]);
+                        xmlWriter.WriteElementString(headers[i], csv[i]);
+                    }
+                    //trim ending ", " from point
+                    point = point.Substring(0, point.Length - 2);
+                    xmlWriter.WriteStartElement("Point");
+                    xmlWriter.WriteElementString("Coordinates", point);
+                    xmlWriter.WriteEndElement(); //Point
+                    xmlWriter.WriteEndElement(); //Placemark
+                    point = "";
+                }
+
+                xmlWriter.WriteEndElement(); // root
+                xmlWriter.WriteEndDocument();
+                xmlWriter.Close();
+                lblFeedback.Text = "File converted";
+            }
+        }
+    }
+}
+
+
+/*
                 xmlWriter.WriteStartElement("root");
                 xmlWriter.WriteStartElement("data");
                 xmlWriter.WriteStartElement("entry");
@@ -101,13 +155,8 @@ namespace CSV_Converter
                 xmlWriter.WriteEndElement(); // root
                 xmlWriter.WriteEndDocument();
                 xmlWriter.Close();
-            }
-        }
-    }
-}
 
 
-/*
 create xml-object having as properties the CSV column headings
 create xml-object having as properties the current row's values
 
