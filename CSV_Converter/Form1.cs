@@ -22,28 +22,13 @@ namespace CSV_Converter
 
         private void BtnBrowse_Click(object sender, EventArgs e)
         {
+            tbInput.BackColor = Color.White;
             DialogResult result = openFileDialogInput.ShowDialog(); // Show the dialog.
             if (result == DialogResult.OK) // Test result.
             {
                 tbInput.Text = openFileDialogInput.FileName;
                 //convenience: use regex to keep directory and change file name for default output
-
-                /*
-                string file = openFileDialog1.FileName;
-                try
-                {
-                    string text = File.ReadAllText(file);
-                    //List<String> lines = (List<String>) File.ReadLines(file);
-                    int size = text.Length;
-                    label1.Text = "text: " + text + " size: " + size;
-                }
-                catch (IOException)
-                {
-                }
-                */
             }
-            //Console.WriteLine(size); // <-- Shows file size in debugging mode.
-            //Console.WriteLine(result); // <-- For debugging use.
         }
 
         private void BtnOutputBrowse_Click(object sender, EventArgs e)
@@ -53,30 +38,6 @@ namespace CSV_Converter
             {
                 tbOutput.Text = saveFileDialogOutput.FileName;
             }
-
-            /*
-            String temp = "";
-            // open the file "data.csv" which is a CSV file with headers
-            using (CsvReader csv =
-                   new CsvReader(new StreamReader("in.csv"), true))
-            {
-                int fieldCount = csv.FieldCount;
-                lblFeedback.Text = fieldCount.ToString();
-                
-                string[] headers = csv.GetFieldHeaders();
-                while (csv.ReadNextRecord())
-                {
-                    for (int i = 0; i < fieldCount; i++)
-                    temp = string.Format("{0} = {1};", headers[i], csv[i]);
-                    lblFeedback.Text += " " + temp; // string.Format("{0} = {1};", csv[i], csv[i]);
-                    lblFeedback.Text += " done";
-
-                    //writer.Write("stuff");
-                }
-            }
-            StreamWriter writer = new StreamWriter("out.kml", false);
-            writer.Write("stuff");
-            */
         }
 
         private void BtnConvert_Click(object sender, EventArgs e)
@@ -84,9 +45,21 @@ namespace CSV_Converter
             lblFeedback.Text = "Working...";
             String input = tbInput.Text;
             String output = tbOutput.Text;
-
-            if (input != "" && output != "")
+            string directory;
+            
+            if (input == "")
             {
+                lblFeedback.Text = "Input file field is empty.";
+                tbInput.BackColor = Color.Red;
+            }
+            else
+            {
+                if (output == "")
+                {
+                    directory = Path.GetDirectoryName(input) + "\\out.kml";
+                    output = tbOutput.Text = directory;
+                }
+
                 CsvReader csv = new CsvReader(new StreamReader(input), true);
                 var xmlWriter = XmlWriter.Create(output);
                 xmlWriter.WriteStartDocument();
