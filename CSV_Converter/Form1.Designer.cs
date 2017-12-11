@@ -36,7 +36,6 @@
             this.lblOutput = new System.Windows.Forms.Label();
             this.BtnOutputBrowse = new System.Windows.Forms.Button();
             this.BtnConvert = new System.Windows.Forms.Button();
-            this.openFileDialogOutput = new System.Windows.Forms.OpenFileDialog();
             this.lblFeedback = new System.Windows.Forms.Label();
             this.saveFileDialogOutput = new System.Windows.Forms.SaveFileDialog();
             this.SuspendLayout();
@@ -69,6 +68,7 @@
             // 
             this.tbInput.Location = new System.Drawing.Point(15, 26);
             this.tbInput.Name = "tbInput";
+            this.tbInput.ReadOnly = true;
             this.tbInput.Size = new System.Drawing.Size(305, 20);
             this.tbInput.TabIndex = 1;
             // 
@@ -76,6 +76,7 @@
             // 
             this.tbOutput.Location = new System.Drawing.Point(15, 81);
             this.tbOutput.Name = "tbOutput";
+            this.tbOutput.ReadOnly = true;
             this.tbOutput.Size = new System.Drawing.Size(305, 20);
             this.tbOutput.TabIndex = 3;
             // 
@@ -107,11 +108,6 @@
             this.BtnConvert.Text = "Convert";
             this.BtnConvert.UseVisualStyleBackColor = true;
             this.BtnConvert.Click += new System.EventHandler(this.BtnConvert_Click);
-            // 
-            // openFileDialogOutput
-            // 
-            this.openFileDialogOutput.FileName = "out.kml";
-            this.openFileDialogOutput.Filter = "KML Files|*.kml|All files|*.*";
             // 
             // lblFeedback
             // 
@@ -155,7 +151,6 @@
         private System.Windows.Forms.Label lblOutput;
         private System.Windows.Forms.Button BtnOutputBrowse;
         private System.Windows.Forms.Button BtnConvert;
-        private System.Windows.Forms.OpenFileDialog openFileDialogOutput;
         private System.Windows.Forms.Label lblFeedback;
         private System.Windows.Forms.SaveFileDialog saveFileDialogOutput;
     }

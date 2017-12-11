@@ -1,12 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using LumenWorks.Framework.IO.Csv;
 using System.Xml;
@@ -24,17 +18,16 @@ namespace CSV_Converter
         {
             tbInput.BackColor = Color.White;
             DialogResult result = openFileDialogInput.ShowDialog(); // Show the dialog.
-            if (result == DialogResult.OK) // Test result.
+            if (result == DialogResult.OK)
             {
                 tbInput.Text = openFileDialogInput.FileName;
-                //convenience: use regex to keep directory and change file name for default output
             }
         }
 
         private void BtnOutputBrowse_Click(object sender, EventArgs e)
         {
             DialogResult result = saveFileDialogOutput.ShowDialog(); // Show the dialog.
-            if (result == DialogResult.OK) // Test result.
+            if (result == DialogResult.OK)
             {
                 tbOutput.Text = saveFileDialogOutput.FileName;
             }
@@ -50,7 +43,7 @@ namespace CSV_Converter
             if (input == "")
             {
                 lblFeedback.Text = "Input file field is empty.";
-                tbInput.BackColor = Color.Red;
+                tbInput.BackColor = Color.IndianRed;
             }
             else
             {
@@ -64,7 +57,6 @@ namespace CSV_Converter
                 var xmlWriter = XmlWriter.Create(output);
                 xmlWriter.WriteStartDocument();
                 xmlWriter.WriteStartElement("root");
-                //lblFeedback.Text = "root";
                 String point = "";
                 bool isCoord = false;
                 bool hasCoord = false;
@@ -90,12 +82,10 @@ namespace CSV_Converter
                             point += csv[i] + ", ";
                             isCoord = false;
                         }
-                        //xmlWriter.WriteStartElement(headers[i]);
-                        //xmlWriter.WriteAttributeString(headers[i], csv[i]);
                         xmlWriter.WriteElementString(headers[i], csv[i]);
                     }
-                    //trim ending ", " from point
-                    point = point.Substring(0, point.Length - 2);
+                    
+                    point = point.Substring(0, point.Length - 2); //trim ending ", " from point
                     xmlWriter.WriteStartElement("Point");
                     xmlWriter.WriteElementString("Coordinates", point);
                     xmlWriter.WriteEndElement(); //Point
@@ -103,7 +93,7 @@ namespace CSV_Converter
                     point = "";
                 }
 
-                xmlWriter.WriteEndElement(); // root
+                xmlWriter.WriteEndElement(); //root...or Groot?
                 xmlWriter.WriteEndDocument();
                 xmlWriter.Close();
                 lblFeedback.Text = "File converted";
@@ -111,28 +101,3 @@ namespace CSV_Converter
         }
     }
 }
-
-
-/*
-                xmlWriter.WriteStartElement("root");
-                xmlWriter.WriteStartElement("data");
-                xmlWriter.WriteStartElement("entry");
-                xmlWriter.WriteAttributeString("attrib1", "value1");
-                xmlWriter.WriteAttributeString("attrib2", "value2");
-                xmlWriter.WriteEndElement(); // entry
-                xmlWriter.WriteStartElement("entry");
-                xmlWriter.WriteAttributeString("attrib1", "value1");
-                xmlWriter.WriteAttributeString("attrib2", "value2");
-                xmlWriter.WriteEndElement(); // entry
-                xmlWriter.WriteEndElement(); // data
-                xmlWriter.WriteEndElement(); // root
-                xmlWriter.WriteEndDocument();
-                xmlWriter.Close();
-
-
-create xml-object having as properties the CSV column headings
-create xml-object having as properties the current row's values
-
-determine relevant bits according to predetermined list (TBD by Jeff/Tucker)
-read in CSV, line by line, and write relevant parts to KML
-*/
