@@ -53,6 +53,7 @@ namespace CSV_Converter
                     output = tbOutput.Text = directory;
                 }
 
+                //considering Path.GetDirectoryName to test validity of given filepath
                 CsvReader csv = new CsvReader(new StreamReader(input), true);
                 var xmlWriter = XmlWriter.Create(output);
                 xmlWriter.WriteStartDocument();
@@ -85,10 +86,14 @@ namespace CSV_Converter
                         xmlWriter.WriteElementString(headers[i], csv[i]);
                     }
                     
-                    point = point.Substring(0, point.Length - 2); //trim ending ", " from point
-                    xmlWriter.WriteStartElement("Point");
-                    xmlWriter.WriteElementString("Coordinates", point);
-                    xmlWriter.WriteEndElement(); //Point
+                    if(point.Length > 2)
+                    {
+                        point = point.Substring(0, point.Length - 2); //trim ending ", " from point
+                        xmlWriter.WriteStartElement("Point");
+                        xmlWriter.WriteElementString("Coordinates", point);
+                        xmlWriter.WriteEndElement(); //Point
+                    }
+                    
                     xmlWriter.WriteEndElement(); //Placemark
                     point = "";
                 }
