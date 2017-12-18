@@ -1,6 +1,6 @@
 ﻿namespace CSV_Converter
 {
-    partial class Form1
+    partial class CsvToKmlConverter
     {
         /// <summary>
         /// Required designer variable.
@@ -38,6 +38,7 @@
             this.BtnConvert = new System.Windows.Forms.Button();
             this.lblFeedback = new System.Windows.Forms.Label();
             this.saveFileDialogOutput = new System.Windows.Forms.SaveFileDialog();
+            this.pBar = new System.Windows.Forms.ProgressBar();
             this.SuspendLayout();
             // 
             // BtnInputBrowse
@@ -101,7 +102,7 @@
             // 
             // BtnConvert
             // 
-            this.BtnConvert.Location = new System.Drawing.Point(324, 132);
+            this.BtnConvert.Location = new System.Drawing.Point(326, 132);
             this.BtnConvert.Name = "BtnConvert";
             this.BtnConvert.Size = new System.Drawing.Size(75, 23);
             this.BtnConvert.TabIndex = 5;
@@ -112,20 +113,29 @@
             // lblFeedback
             // 
             this.lblFeedback.AutoSize = true;
-            this.lblFeedback.Location = new System.Drawing.Point(12, 132);
+            this.lblFeedback.Location = new System.Drawing.Point(12, 115);
             this.lblFeedback.Name = "lblFeedback";
-            this.lblFeedback.Size = new System.Drawing.Size(0, 13);
+            this.lblFeedback.Size = new System.Drawing.Size(52, 13);
             this.lblFeedback.TabIndex = 7;
+            this.lblFeedback.Text = "feedback";
             // 
             // saveFileDialogOutput
             // 
             this.saveFileDialogOutput.Filter = "KML Files|*.kml|All files|*.*";
             // 
-            // Form1
+            // pBar
+            // 
+            this.pBar.Location = new System.Drawing.Point(15, 131);
+            this.pBar.Name = "pBar";
+            this.pBar.Size = new System.Drawing.Size(305, 23);
+            this.pBar.TabIndex = 101;
+            // 
+            // CsvToKmlConverter
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(413, 167);
+            this.Controls.Add(this.pBar);
             this.Controls.Add(this.lblFeedback);
             this.Controls.Add(this.BtnConvert);
             this.Controls.Add(this.tbOutput);
@@ -134,8 +144,8 @@
             this.Controls.Add(this.tbInput);
             this.Controls.Add(this.lblInput);
             this.Controls.Add(this.BtnInputBrowse);
-            this.Name = "Form1";
-            this.Text = "Form1";
+            this.Name = "CsvToKmlConverter";
+            this.Text = "CSV to KML Converter";
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -153,6 +163,7 @@
         private System.Windows.Forms.Button BtnConvert;
         private System.Windows.Forms.Label lblFeedback;
         private System.Windows.Forms.SaveFileDialog saveFileDialogOutput;
+        private System.Windows.Forms.ProgressBar pBar;
     }
 }
 
