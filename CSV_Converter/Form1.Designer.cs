@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CsvToKmlConverter));
             this.BtnInputBrowse = new System.Windows.Forms.Button();
             this.openFileDialogInput = new System.Windows.Forms.OpenFileDialog();
             this.lblInput = new System.Windows.Forms.Label();
@@ -67,6 +68,7 @@
             // 
             // tbInput
             // 
+            this.tbInput.BackColor = System.Drawing.Color.WhiteSmoke;
             this.tbInput.Location = new System.Drawing.Point(15, 26);
             this.tbInput.Name = "tbInput";
             this.tbInput.ReadOnly = true;
@@ -75,6 +77,7 @@
             // 
             // tbOutput
             // 
+            this.tbOutput.BackColor = System.Drawing.Color.WhiteSmoke;
             this.tbOutput.Location = new System.Drawing.Point(15, 81);
             this.tbOutput.Name = "tbOutput";
             this.tbOutput.ReadOnly = true;
@@ -144,6 +147,7 @@
             this.Controls.Add(this.tbInput);
             this.Controls.Add(this.lblInput);
             this.Controls.Add(this.BtnInputBrowse);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "CsvToKmlConverter";
             this.Text = "CSV to KML Converter";
             this.ResumeLayout(false);

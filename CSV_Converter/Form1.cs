@@ -24,11 +24,11 @@ namespace CSV_Converter
 
         private void BtnBrowse_Click(object sender, EventArgs e)
         {
-            tbInput.BackColor = Color.White;
             DialogResult result = openFileDialogInput.ShowDialog();
             if (result == DialogResult.OK)
             {
                 tbInput.Text = openFileDialogInput.FileName;
+                tbInput.BackColor = Color.WhiteSmoke;
             }
         }
 
@@ -49,11 +49,6 @@ namespace CSV_Converter
             string directory;
             int recordsRead = 0; //dirty hack to get the ProgressBar working, hopefully with some measure of accuracy
 
-            pBar.Minimum = 1;
-            pBar.Maximum = (int) new System.IO.FileInfo(input).Length / kbPerStep * 1000;
-            pBar.Value = 1;
-            pBar.Step = 1;
-
             if (input == "")
             {
                 lblFeedback.Text = "Input file field is empty.";
@@ -61,6 +56,12 @@ namespace CSV_Converter
             }
             else
             {
+                pBar.Minimum = 1;
+                int steps = (int) new System.IO.FileInfo(input).Length / (kbPerStep * 1000);
+                pBar.Maximum = (steps>1) ? steps : 1;
+                pBar.Value = 1;
+                pBar.Step = 1;
+
                 if (output == "")
                 {
                     directory = Path.GetDirectoryName(input) + "\\out.kml";
@@ -95,6 +96,7 @@ namespace CSV_Converter
                             foreach(String header in coordHeaders)
                             {
                                 isCoord = headers[i].Contains(header) ? true : isCoord;
+                                //considering breaking if match is found; especially if list becomes long
                             }
 
                             if (isCoord)
@@ -102,7 +104,17 @@ namespace CSV_Converter
                                 point += csv[i] + ", ";
                                 isCoord = false;
                             }
-                            xmlWriter.WriteElementString(headers[i], csv[i]);
+
+                            try
+                            {
+                                xmlWriter.WriteElementString(headers[i], csv[i]);
+                            }
+                            catch(ArgumentException argEx)
+                            {
+                                string message = "Bad headers in input file.\n\nError code: " + argEx.ToString();
+                                string caption = "Error in input file.";
+                                DisplayError(message, caption);
+                            }
 
                             //dirty hack to hopefully give ProgressBar some measure of accuracy
                             recordsRead++;
@@ -134,18 +146,25 @@ namespace CSV_Converter
                 catch(IOException IOex)
                 {
                     string message = "Cannot access file. May be in use or no longer available. Please check and try again.\n\nError code: " + IOex.ToString();
-                    string caption = "Error accessing input file.";
-                    MessageBoxButtons buttons = MessageBoxButtons.OK;
-                    DialogResult result = MessageBox.Show(message, caption, buttons);
+                    string caption = "Error accessing file.";
+                    DisplayError(message, caption);
                 }
                 catch(UnauthorizedAccessException unauthEx)
                 {
                     string message = "Cannot access file. Insufficient read-write privileges. Please check and try again.\n\nError code: " + unauthEx.ToString();
-                    string caption = "Error accessing input file.";
-                    MessageBoxButtons buttons = MessageBoxButtons.OK;
-                    DialogResult result = MessageBox.Show(message, caption, buttons);
+                    string caption = "Error accessing file.";
+                    DisplayError(message, caption);
                 }
             }
+        }
+
+        //
+        //METHODS
+        //
+        private void DisplayError(String msg, String cap)
+        {
+            MessageBoxButtons buttons = MessageBoxButtons.OK;
+            DialogResult result = MessageBox.Show(msg, cap, buttons);
         }
     }
 }
