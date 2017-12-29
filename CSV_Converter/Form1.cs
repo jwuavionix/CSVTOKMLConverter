@@ -58,7 +58,7 @@ namespace CSV_Converter
             {
                 pBar.Minimum = 1;
                 int steps = (int) new System.IO.FileInfo(input).Length / (kbPerStep * 1000);
-                pBar.Maximum = (steps>1) ? steps : 1;
+                pBar.Maximum = (steps>0) ? steps : 1;
                 pBar.Value = 1;
                 pBar.Step = 1;
 
@@ -111,9 +111,19 @@ namespace CSV_Converter
                             }
                             catch(ArgumentException argEx)
                             {
-                                string message = "Bad headers in input file.\n\nError code: " + argEx.ToString();
+                                string message = "Bad headers in input file. Aborting conversion.\n\nError code: " + argEx.ToString();
                                 string caption = "Error in input file.";
                                 DisplayError(message, caption);
+                                xmlWriter.Close();
+                                return;
+                            }
+                            catch(InvalidOperationException invOpEx)
+                            {
+                                string message = "Unknown error. Aborting conversion.\n\nError code: " + invOpEx.ToString();
+                                string caption = "Unknown error.";
+                                DisplayError(message, caption);
+                                xmlWriter.Close();
+                                return;
                             }
 
                             //dirty hack to hopefully give ProgressBar some measure of accuracy
@@ -142,6 +152,8 @@ namespace CSV_Converter
                     xmlWriter.WriteEndDocument();
                     xmlWriter.Close();
                     lblFeedback.Text = "File converted";
+
+                    xmlWriter.Close();
                 }
                 catch(IOException IOex)
                 {
@@ -155,6 +167,7 @@ namespace CSV_Converter
                     string caption = "Error accessing file.";
                     DisplayError(message, caption);
                 }
+
             }
         }
 
