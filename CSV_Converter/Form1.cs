@@ -64,7 +64,7 @@ namespace CSV_Converter
 
                 if (output == "")
                 {
-                    directory = Path.GetDirectoryName(input) + "\\out.kml";
+                    directory = Path.GetDirectoryName(input) + "\\" + Path.GetFileNameWithoutExtension(input) + ".kml";
                     output = tbOutput.Text = directory;
                 }
 
@@ -76,7 +76,6 @@ namespace CSV_Converter
                     xmlWriter.WriteStartElement("root");
                     String point = "";
                     bool isCoord = false;
-                    //bool firstCoords; //flag to prevent multiple <Point> elements
 
                     int fieldCount = csv.FieldCount;
                     string[] headers = csv.GetFieldHeaders();
@@ -91,8 +90,6 @@ namespace CSV_Converter
 
                         for (int i = 0; i < fieldCount; i++)
                         {
-                            //firstCoords = true;
-
                             foreach(String header in coordHeaders)
                             {
                                 isCoord = headers[i].Contains(header) ? true : isCoord;
@@ -145,7 +142,6 @@ namespace CSV_Converter
 
                         xmlWriter.WriteEndElement(); //Placemark
                         point = "";
-                        //firstCoords = true;
                     } //end while
 
                     xmlWriter.WriteEndElement(); //root...or Groot?
@@ -178,6 +174,17 @@ namespace CSV_Converter
         {
             MessageBoxButtons buttons = MessageBoxButtons.OK;
             DialogResult result = MessageBox.Show(msg, cap, buttons);
+        }
+
+        private void tsMenuExit_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void tsAbout_Click(object sender, EventArgs e)
+        {
+            AboutBox about = new AboutBox();
+            about.Show();
         }
     }
 }

@@ -40,11 +40,16 @@
             this.lblFeedback = new System.Windows.Forms.Label();
             this.saveFileDialogOutput = new System.Windows.Forms.SaveFileDialog();
             this.pBar = new System.Windows.Forms.ProgressBar();
+            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.tsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsMenuExit = new System.Windows.Forms.ToolStripTextBox();
+            this.tsAbout = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // BtnInputBrowse
             // 
-            this.BtnInputBrowse.Location = new System.Drawing.Point(326, 24);
+            this.BtnInputBrowse.Location = new System.Drawing.Point(326, 60);
             this.BtnInputBrowse.Name = "BtnInputBrowse";
             this.BtnInputBrowse.Size = new System.Drawing.Size(75, 23);
             this.BtnInputBrowse.TabIndex = 2;
@@ -60,7 +65,7 @@
             // lblInput
             // 
             this.lblInput.AutoSize = true;
-            this.lblInput.Location = new System.Drawing.Point(12, 9);
+            this.lblInput.Location = new System.Drawing.Point(12, 45);
             this.lblInput.Name = "lblInput";
             this.lblInput.Size = new System.Drawing.Size(50, 13);
             this.lblInput.TabIndex = 100;
@@ -69,7 +74,7 @@
             // tbInput
             // 
             this.tbInput.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.tbInput.Location = new System.Drawing.Point(15, 26);
+            this.tbInput.Location = new System.Drawing.Point(15, 62);
             this.tbInput.Name = "tbInput";
             this.tbInput.ReadOnly = true;
             this.tbInput.Size = new System.Drawing.Size(305, 20);
@@ -78,7 +83,7 @@
             // tbOutput
             // 
             this.tbOutput.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.tbOutput.Location = new System.Drawing.Point(15, 81);
+            this.tbOutput.Location = new System.Drawing.Point(15, 117);
             this.tbOutput.Name = "tbOutput";
             this.tbOutput.ReadOnly = true;
             this.tbOutput.Size = new System.Drawing.Size(305, 20);
@@ -87,7 +92,7 @@
             // lblOutput
             // 
             this.lblOutput.AutoSize = true;
-            this.lblOutput.Location = new System.Drawing.Point(12, 64);
+            this.lblOutput.Location = new System.Drawing.Point(12, 100);
             this.lblOutput.Name = "lblOutput";
             this.lblOutput.Size = new System.Drawing.Size(58, 13);
             this.lblOutput.TabIndex = 40;
@@ -95,7 +100,7 @@
             // 
             // BtnOutputBrowse
             // 
-            this.BtnOutputBrowse.Location = new System.Drawing.Point(326, 79);
+            this.BtnOutputBrowse.Location = new System.Drawing.Point(326, 115);
             this.BtnOutputBrowse.Name = "BtnOutputBrowse";
             this.BtnOutputBrowse.Size = new System.Drawing.Size(75, 23);
             this.BtnOutputBrowse.TabIndex = 4;
@@ -105,7 +110,7 @@
             // 
             // BtnConvert
             // 
-            this.BtnConvert.Location = new System.Drawing.Point(326, 132);
+            this.BtnConvert.Location = new System.Drawing.Point(326, 168);
             this.BtnConvert.Name = "BtnConvert";
             this.BtnConvert.Size = new System.Drawing.Size(75, 23);
             this.BtnConvert.TabIndex = 5;
@@ -116,7 +121,7 @@
             // lblFeedback
             // 
             this.lblFeedback.AutoSize = true;
-            this.lblFeedback.Location = new System.Drawing.Point(12, 115);
+            this.lblFeedback.Location = new System.Drawing.Point(12, 151);
             this.lblFeedback.Name = "lblFeedback";
             this.lblFeedback.Size = new System.Drawing.Size(52, 13);
             this.lblFeedback.TabIndex = 7;
@@ -128,16 +133,49 @@
             // 
             // pBar
             // 
-            this.pBar.Location = new System.Drawing.Point(15, 131);
+            this.pBar.Location = new System.Drawing.Point(15, 167);
             this.pBar.Name = "pBar";
             this.pBar.Size = new System.Drawing.Size(305, 23);
             this.pBar.TabIndex = 101;
+            // 
+            // menuStrip1
+            // 
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsMenu,
+            this.tsAbout});
+            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.Size = new System.Drawing.Size(413, 24);
+            this.menuStrip1.TabIndex = 102;
+            this.menuStrip1.Text = "menuStrip1";
+            // 
+            // tsMenu
+            // 
+            this.tsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsMenuExit});
+            this.tsMenu.Name = "tsMenu";
+            this.tsMenu.Size = new System.Drawing.Size(50, 20);
+            this.tsMenu.Text = "Menu";
+            // 
+            // tsMenuExit
+            // 
+            this.tsMenuExit.Name = "tsMenuExit";
+            this.tsMenuExit.Size = new System.Drawing.Size(100, 23);
+            this.tsMenuExit.Text = "text";
+            this.tsMenuExit.Click += new System.EventHandler(this.tsMenuExit_Click);
+            // 
+            // tsAbout
+            // 
+            this.tsAbout.Name = "tsAbout";
+            this.tsAbout.Size = new System.Drawing.Size(52, 20);
+            this.tsAbout.Text = "About";
+            this.tsAbout.Click += new System.EventHandler(this.tsAbout_Click);
             // 
             // CsvToKmlConverter
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(413, 167);
+            this.ClientSize = new System.Drawing.Size(413, 218);
             this.Controls.Add(this.pBar);
             this.Controls.Add(this.lblFeedback);
             this.Controls.Add(this.BtnConvert);
@@ -147,9 +185,13 @@
             this.Controls.Add(this.tbInput);
             this.Controls.Add(this.lblInput);
             this.Controls.Add(this.BtnInputBrowse);
+            this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MainMenuStrip = this.menuStrip1;
             this.Name = "CsvToKmlConverter";
             this.Text = "CSV to KML Converter";
+            this.menuStrip1.ResumeLayout(false);
+            this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -168,6 +210,10 @@
         private System.Windows.Forms.Label lblFeedback;
         private System.Windows.Forms.SaveFileDialog saveFileDialogOutput;
         private System.Windows.Forms.ProgressBar pBar;
+        private System.Windows.Forms.MenuStrip menuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem tsMenu;
+        private System.Windows.Forms.ToolStripTextBox tsMenuExit;
+        private System.Windows.Forms.ToolStripMenuItem tsAbout;
     }
 }
 
