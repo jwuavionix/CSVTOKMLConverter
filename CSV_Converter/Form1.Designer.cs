@@ -44,6 +44,7 @@
             this.tsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.tsMenuExit = new System.Windows.Forms.ToolStripMenuItem();
             this.tsAbout = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnClear = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -145,7 +146,7 @@
             this.tsAbout});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(413, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(492, 24);
             this.menuStrip1.TabIndex = 102;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -160,7 +161,7 @@
             // tsMenuExit
             // 
             this.tsMenuExit.Name = "tsMenuExit";
-            this.tsMenuExit.Size = new System.Drawing.Size(152, 22);
+            this.tsMenuExit.Size = new System.Drawing.Size(92, 22);
             this.tsMenuExit.Text = "Exit";
             this.tsMenuExit.Click += new System.EventHandler(this.tsMenuExit_Click);
             // 
@@ -171,11 +172,22 @@
             this.tsAbout.Text = "About";
             this.tsAbout.Click += new System.EventHandler(this.tsAbout_Click);
             // 
+            // btnClear
+            // 
+            this.btnClear.Location = new System.Drawing.Point(407, 107);
+            this.btnClear.Name = "btnClear";
+            this.btnClear.Size = new System.Drawing.Size(75, 23);
+            this.btnClear.TabIndex = 103;
+            this.btnClear.Text = "Clear";
+            this.btnClear.UseVisualStyleBackColor = true;
+            this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
+            // 
             // CsvToKmlConverter
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(413, 196);
+            this.ClientSize = new System.Drawing.Size(492, 196);
+            this.Controls.Add(this.btnClear);
             this.Controls.Add(this.pBar);
             this.Controls.Add(this.lblFeedback);
             this.Controls.Add(this.BtnConvert);
@@ -214,6 +226,7 @@
         private System.Windows.Forms.ToolStripMenuItem tsMenu;
         private System.Windows.Forms.ToolStripMenuItem tsAbout;
         private System.Windows.Forms.ToolStripMenuItem tsMenuExit;
+        private System.Windows.Forms.Button btnClear;
     }
 }
 

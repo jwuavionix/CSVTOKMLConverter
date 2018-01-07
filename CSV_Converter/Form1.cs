@@ -10,9 +10,11 @@ namespace CSV_Converter
     public partial class CsvToKmlConverter : Form
     {
         //ProgressBar tinkering
-        int filesPerKB = 15;
-        int kbPerStep = 100;
+        int filesPerKB = 15; //obtained by dividing number of records by filesize in KB
+        int kbPerStep = 100; //obtained arbitrarily
 
+        //kml format does not allow for colons, and this array is used after they are converted to dashes
+        //please change colons to dashes if you are adding possible coordinate header names to this list
         String[] coordHeaders = {"GPS--Lat","GPS--Lon","GPS--Alt"};
 
         public CsvToKmlConverter()
@@ -20,6 +22,22 @@ namespace CSV_Converter
             InitializeComponent();
             lblFeedback.Text = "";
             pBar.Visible = true;
+        }
+
+        private void tsMenuExit_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void tsAbout_Click(object sender, EventArgs e)
+        {
+            AboutBox about = new AboutBox();
+            about.Show();
+        }
+
+        private void btnClear_Click(object sender, EventArgs e)
+        {
+            tbOutput.Text = "";
         }
 
         private void BtnBrowse_Click(object sender, EventArgs e)
@@ -46,7 +64,7 @@ namespace CSV_Converter
             lblFeedback.Text = "Working...";
             String input = tbInput.Text;
             String output = tbOutput.Text;
-            string directory;
+            string filepath;
             int recordsRead = 0; //dirty hack to get the ProgressBar working, hopefully with some measure of accuracy
 
             if (input == "")
@@ -56,16 +74,17 @@ namespace CSV_Converter
             }
             else
             {
-                pBar.Minimum = 1;
+                pBar.Minimum = 0;
                 int steps = (int) new System.IO.FileInfo(input).Length / (kbPerStep * 1000);
-                pBar.Maximum = (steps>0) ? steps : 1;
+                pBar.Maximum = (steps>1) ? steps : 2;
                 pBar.Value = 1;
                 pBar.Step = 1;
+                pBar.PerformStep();
 
                 if (output == "")
                 {
-                    directory = Path.GetDirectoryName(input) + "\\" + Path.GetFileNameWithoutExtension(input) + ".kml";
-                    output = tbOutput.Text = directory;
+                    filepath = Path.GetDirectoryName(input) + "\\" + Path.GetFileNameWithoutExtension(input) + ".kml";
+                    output = tbOutput.Text = filepath;
                 }
 
                 try
@@ -73,7 +92,8 @@ namespace CSV_Converter
                     CsvReader csv = new CsvReader(new StreamReader(input), true);
                     var xmlWriter = XmlWriter.Create(output);
                     xmlWriter.WriteStartDocument();
-                    xmlWriter.WriteStartElement("root");
+                    xmlWriter.WriteStartElement("kml", "http://www.opengis.net/kml/2.2");
+                    xmlWriter.WriteStartElement("Folder");
                     String point = "";
                     bool isCoord = false;
 
@@ -144,7 +164,8 @@ namespace CSV_Converter
                         point = "";
                     } //end while
 
-                    xmlWriter.WriteEndElement(); //root...or Groot?
+                    xmlWriter.WriteEndElement(); //Folder
+                    xmlWriter.WriteEndElement(); //kml
                     xmlWriter.WriteEndDocument();
                     xmlWriter.Close();
                     lblFeedback.Text = "File converted";
@@ -156,14 +177,15 @@ namespace CSV_Converter
                     string message = "Cannot access file. May be in use or no longer available. Please check and try again.\n\nError code: " + IOex.ToString();
                     string caption = "Error accessing file.";
                     DisplayError(message, caption);
+                    pBar.Value = 0;
                 }
                 catch(UnauthorizedAccessException unauthEx)
                 {
                     string message = "Cannot access file. Insufficient read-write privileges. Please check and try again.\n\nError code: " + unauthEx.ToString();
                     string caption = "Error accessing file.";
                     DisplayError(message, caption);
+                    pBar.Value = 0;
                 }
-
             }
         }
 
@@ -174,17 +196,6 @@ namespace CSV_Converter
         {
             MessageBoxButtons buttons = MessageBoxButtons.OK;
             DialogResult result = MessageBox.Show(msg, cap, buttons);
-        }
-
-        private void tsMenuExit_Click(object sender, EventArgs e)
-        {
-            this.Close();
-        }
-
-        private void tsAbout_Click(object sender, EventArgs e)
-        {
-            AboutBox about = new AboutBox();
-            about.Show();
         }
     }
 }
