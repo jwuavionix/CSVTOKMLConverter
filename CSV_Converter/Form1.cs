@@ -13,6 +13,15 @@ namespace CSV_Converter
         int filesPerKB = 15; //obtained by dividing number of records by filesize in KB
         int kbPerStep = 100; //obtained arbitrarily
 
+        int recordsRead; //dirty hack to get the ProgressBar working, hopefully with some measure of accuracy
+        CsvReader csv;
+        XmlWriter xmlWriter;
+        String point;
+        bool isCoord;
+
+        int fieldCount;
+        String[] headers;
+
         //kml format does not allow for colons, and this array is used after they are converted to dashes
         //please change colons to dashes if you are adding possible coordinate header names to this list
         String[] coordHeaders = {"GPS--Lat","GPS--Lon","GPS--Alt"};
@@ -64,8 +73,8 @@ namespace CSV_Converter
             lblFeedback.Text = "Working...";
             String input = tbInput.Text;
             String output = tbOutput.Text;
-            string filepath;
-            int recordsRead = 0; //dirty hack to get the ProgressBar working, hopefully with some measure of accuracy
+            String filepath;
+            recordsRead = 0; //dirty hack to get the ProgressBar working, hopefully with some measure of accuracy
 
             if (input == "")
             {
@@ -89,16 +98,16 @@ namespace CSV_Converter
 
                 try
                 {
-                    CsvReader csv = new CsvReader(new StreamReader(input), true);
-                    var xmlWriter = XmlWriter.Create(output);
+                    csv = new CsvReader(new StreamReader(input), true);
+                    xmlWriter = XmlWriter.Create(output);
                     xmlWriter.WriteStartDocument();
                     xmlWriter.WriteStartElement("kml", "http://www.opengis.net/kml/2.2");
                     xmlWriter.WriteStartElement("Folder");
-                    String point = "";
-                    bool isCoord = false;
+                    point = "";
+                    isCoord = false;
 
-                    int fieldCount = csv.FieldCount;
-                    string[] headers = csv.GetFieldHeaders();
+                    fieldCount = csv.FieldCount;
+                    headers = csv.GetFieldHeaders();
                     for (int i = 0; i < fieldCount; i++)
                     {
                         headers[i] = headers[i].Replace(":", "-");
@@ -106,63 +115,8 @@ namespace CSV_Converter
 
                     while (csv.ReadNextRecord())
                     {
-                        xmlWriter.WriteStartElement("Placemark");
-
-                        for (int i = 0; i < fieldCount; i++)
-                        {
-                            foreach(String header in coordHeaders)
-                            {
-                                isCoord = headers[i].Contains(header) ? true : isCoord;
-                                //considering breaking if match is found; especially if list becomes long
-                            }
-
-                            if (isCoord)
-                            {
-                                point += csv[i] + ", ";
-                                isCoord = false;
-                            }
-
-                            try
-                            {
-                                xmlWriter.WriteElementString(headers[i], csv[i]);
-                            }
-                            catch(ArgumentException argEx)
-                            {
-                                string message = "Bad headers in input file. Aborting conversion.\n\nError code: " + argEx.ToString();
-                                string caption = "Error in input file.";
-                                DisplayError(message, caption);
-                                xmlWriter.Close();
-                                return;
-                            }
-                            catch(InvalidOperationException invOpEx)
-                            {
-                                string message = "Unknown error. Aborting conversion.\n\nError code: " + invOpEx.ToString();
-                                string caption = "Unknown error.";
-                                DisplayError(message, caption);
-                                xmlWriter.Close();
-                                return;
-                            }
-
-                            //dirty hack to hopefully give ProgressBar some measure of accuracy
-                            recordsRead++;
-                            if (recordsRead >= filesPerKB * kbPerStep)
-                            {
-                                recordsRead = 0;
-                                pBar.PerformStep();
-                            }
-                        }
-
-                        if (point.Length > 2)
-                        {
-                            point = point.Substring(0, point.Length - 2); //trim ending ", " from point
-                            xmlWriter.WriteStartElement("Point");
-                            xmlWriter.WriteElementString("Coordinates", point);
-                            xmlWriter.WriteEndElement(); //Point
-                        }
-
-                        xmlWriter.WriteEndElement(); //Placemark
-                        point = "";
-                    } //end while
+                        processRecord();
+                    }
 
                     xmlWriter.WriteEndElement(); //Folder
                     xmlWriter.WriteEndElement(); //kml
@@ -174,15 +128,15 @@ namespace CSV_Converter
                 }
                 catch(IOException IOex)
                 {
-                    string message = "Cannot access file. May be in use or no longer available. Please check and try again.\n\nError code: " + IOex.ToString();
-                    string caption = "Error accessing file.";
+                    String message = "Cannot access file. May be in use or no longer available. Please check and try again.\n\nError code: " + IOex.ToString();
+                    String caption = "Error accessing file.";
                     DisplayError(message, caption);
                     pBar.Value = 0;
                 }
                 catch(UnauthorizedAccessException unauthEx)
                 {
-                    string message = "Cannot access file. Insufficient read-write privileges. Please check and try again.\n\nError code: " + unauthEx.ToString();
-                    string caption = "Error accessing file.";
+                    String message = "Cannot access file. Insufficient read-write privileges. Please check and try again.\n\nError code: " + unauthEx.ToString();
+                    String caption = "Error accessing file.";
                     DisplayError(message, caption);
                     pBar.Value = 0;
                 }
@@ -196,6 +150,67 @@ namespace CSV_Converter
         {
             MessageBoxButtons buttons = MessageBoxButtons.OK;
             DialogResult result = MessageBox.Show(msg, cap, buttons);
+        }
+
+        private void processRecord()
+        {
+            xmlWriter.WriteStartElement("Placemark");
+
+            for (int i = 0; i < fieldCount; i++)
+            {
+                foreach (String header in coordHeaders)
+                {
+                    isCoord = headers[i].Contains(header) ? true : isCoord;
+                    //considering breaking if match is found; especially if list becomes long
+                }
+
+                if (isCoord)
+                {
+                    point += csv[i] + ", ";
+                    isCoord = false;
+                }
+
+                try
+                {
+                    xmlWriter.WriteElementString(headers[i], csv[i]);
+                }
+                catch (ArgumentException argEx)
+                {
+                    string message = "Bad headers in input file. Aborting conversion.\n\nError code: " + argEx.ToString();
+                    string caption = "Error in input file.";
+                    DisplayError(message, caption);
+                    xmlWriter.Close();
+                    return;
+                }
+                catch (InvalidOperationException invOpEx)
+                {
+                    string message = "Unknown error. Aborting conversion.\n\nError code: " + invOpEx.ToString();
+                    string caption = "Unknown error.";
+                    DisplayError(message, caption);
+                    xmlWriter.Close();
+                    return;
+                }
+            }
+
+            //dirty hack to hopefully give ProgressBar some measure of accuracy
+            //moved from inside for loop 1/14/18 due to logic error (was running for every field, not every record)
+            recordsRead++;
+            if (recordsRead >= filesPerKB * kbPerStep)
+            {
+                recordsRead = 0;
+                pBar.PerformStep();
+            }
+
+            if (point.Length > 2)
+            {
+                point = point.Substring(0, point.Length - 2); //trim ending ", " from point
+                xmlWriter.WriteStartElement("Point");
+                xmlWriter.WriteElementString("Coordinates", point);
+                xmlWriter.WriteEndElement(); //Point
+            }
+
+            xmlWriter.WriteEndElement(); //Placemark
+            point = "";
         }
     }
 }
