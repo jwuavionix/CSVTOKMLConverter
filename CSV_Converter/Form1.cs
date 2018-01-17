@@ -9,22 +9,30 @@ namespace CSV_Converter
 {
     public partial class CsvToKmlConverter : Form
     {
+        //kml format does not allow for colons, and this array is used after they are converted to dashes
+        //please change colons to dashes if you are adding possible coordinate header names to this list
+        String[] coordHeaders = {"GPS--Lat","GPS--Lon","GPS--Alt"};
+
+        //error messages
+        String errCapFileAcc = "Error accessing file.";
+        String errMsgFileUnavailable = "Cannot access file. May be in use or no longer available. Please check and try again.\n\nError code: ";
+        String errMsgFilePriv = "Cannot access file. Insufficient read-write privileges. Please check and try again.\n\nError code: ";
+        String errCapFileMalformed = "Error in input file.";
+        String errMsgBadHeaders = "Bad headers in input file. Aborting conversion.\n\nError code: ";
+        String errCapUnknown = "Unknown error.";
+        String errMsgUnknown = "Unknown error. Aborting conversion.\n\nError code: ";
+
         //ProgressBar tinkering
         int filesPerKB = 15; //obtained by dividing number of records by filesize in KB
         int kbPerStep = 100; //obtained arbitrarily
-
         int recordsRead; //dirty hack to get the ProgressBar working, hopefully with some measure of accuracy
+
         CsvReader csv;
         XmlWriter xmlWriter;
         String point;
         bool isCoord;
-
         int fieldCount;
         String[] headers;
-
-        //kml format does not allow for colons, and this array is used after they are converted to dashes
-        //please change colons to dashes if you are adding possible coordinate header names to this list
-        String[] coordHeaders = {"GPS--Lat","GPS--Lon","GPS--Alt"};
 
         public CsvToKmlConverter()
         {
@@ -103,17 +111,20 @@ namespace CSV_Converter
                     xmlWriter.WriteStartDocument();
                     xmlWriter.WriteStartElement("kml", "http://www.opengis.net/kml/2.2");
                     xmlWriter.WriteStartElement("Folder");
-                    point = "";
-                    isCoord = false;
 
                     fieldCount = csv.FieldCount;
                     headers = csv.GetFieldHeaders();
+
+                    point = "";
+                    isCoord = false;
+
                     for (int i = 0; i < fieldCount; i++)
                     {
+                        headers[i] = XmlConvert.EncodeName(headers[i]);
                         headers[i] = headers[i].Replace(":", "-");
                     }
 
-                    while (csv.ReadNextRecord())
+                    while (csv.ReadNextRecord()) //considering adding a boolean xmlOpen or xmlInError
                     {
                         processRecord();
                     }
@@ -123,35 +134,28 @@ namespace CSV_Converter
                     xmlWriter.WriteEndDocument();
                     xmlWriter.Close();
                     lblFeedback.Text = "File converted";
-
-                    xmlWriter.Close();
                 }
                 catch(IOException IOex)
                 {
-                    String message = "Cannot access file. May be in use or no longer available. Please check and try again.\n\nError code: " + IOex.ToString();
-                    String caption = "Error accessing file.";
-                    DisplayError(message, caption);
+                    DialogResult result = MessageBox.Show(errMsgFileUnavailable + IOex.ToString(), errCapFileAcc, MessageBoxButtons.OK);
                     pBar.Value = 0;
                 }
-                catch(UnauthorizedAccessException unauthEx)
+                catch (UnauthorizedAccessException unauthEx)
                 {
-                    String message = "Cannot access file. Insufficient read-write privileges. Please check and try again.\n\nError code: " + unauthEx.ToString();
-                    String caption = "Error accessing file.";
-                    DisplayError(message, caption);
+                    DialogResult result = MessageBox.Show(errMsgFilePriv + unauthEx.ToString(), errCapFileAcc, MessageBoxButtons.OK);
                     pBar.Value = 0;
                 }
             }
         }
 
-        //
-        //METHODS
-        //
-        private void DisplayError(String msg, String cap)
-        {
-            MessageBoxButtons buttons = MessageBoxButtons.OK;
-            DialogResult result = MessageBox.Show(msg, cap, buttons);
-        }
 
+
+
+
+        //=======
+        //METHODS
+        //=======
+        
         private void processRecord()
         {
             xmlWriter.WriteStartElement("Placemark");
@@ -162,6 +166,8 @@ namespace CSV_Converter
                 {
                     isCoord = headers[i].Contains(header) ? true : isCoord;
                     //considering breaking if match is found; especially if list becomes long
+                    if( headers[i].Contains(header) ) { isCoord = true; }
+                    else { break; }
                 }
 
                 if (isCoord)
@@ -176,17 +182,13 @@ namespace CSV_Converter
                 }
                 catch (ArgumentException argEx)
                 {
-                    string message = "Bad headers in input file. Aborting conversion.\n\nError code: " + argEx.ToString();
-                    string caption = "Error in input file.";
-                    DisplayError(message, caption);
+                    DialogResult result = MessageBox.Show(errMsgBadHeaders + argEx.ToString(), errCapFileMalformed, MessageBoxButtons.OK);
                     xmlWriter.Close();
                     return;
                 }
                 catch (InvalidOperationException invOpEx)
                 {
-                    string message = "Unknown error. Aborting conversion.\n\nError code: " + invOpEx.ToString();
-                    string caption = "Unknown error.";
-                    DisplayError(message, caption);
+                    DialogResult result = MessageBox.Show(errMsgUnknown + invOpEx.ToString(), errCapUnknown, MessageBoxButtons.OK);
                     xmlWriter.Close();
                     return;
                 }
@@ -211,6 +213,6 @@ namespace CSV_Converter
 
             xmlWriter.WriteEndElement(); //Placemark
             point = "";
-        }
+        } //end processRecord()
     }
 }
