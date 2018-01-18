@@ -29,10 +29,11 @@ namespace CSV_Converter
 
         CsvReader csv;
         XmlWriter xmlWriter;
+        String[] headers;
+        String input, output, filepath;
         String point;
         bool isCoord;
         int fieldCount;
-        String[] headers;
 
         public CsvToKmlConverter()
         {
@@ -79,10 +80,8 @@ namespace CSV_Converter
         private void BtnConvert_Click(object sender, EventArgs e)
         {
             lblFeedback.Text = "Working...";
-            String input = tbInput.Text;
-            String output = tbOutput.Text;
-            String filepath;
-            recordsRead = 0; //dirty hack to get the ProgressBar working, hopefully with some measure of accuracy
+            input = tbInput.Text;
+            output = tbOutput.Text;
 
             if (input == "")
             {
@@ -91,32 +90,21 @@ namespace CSV_Converter
             }
             else
             {
-                pBar.Minimum = 0;
-                int steps = (int) new System.IO.FileInfo(input).Length / (kbPerStep * 1000);
-                pBar.Maximum = (steps>1) ? steps : 2;
-                pBar.Value = 1;
-                pBar.Step = 1;
-                pBar.PerformStep();
+                initializeVariables();
 
                 if (output == "")
                 {
                     filepath = Path.GetDirectoryName(input) + "\\" + Path.GetFileNameWithoutExtension(input) + ".kml";
                     output = tbOutput.Text = filepath;
+                    //considering changing Clear button to a checkbox, to process multiple files in a row with auto-generated names
                 }
 
                 try
                 {
-                    csv = new CsvReader(new StreamReader(input), true);
-                    xmlWriter = XmlWriter.Create(output);
-                    xmlWriter.WriteStartDocument();
-                    xmlWriter.WriteStartElement("kml", "http://www.opengis.net/kml/2.2");
-                    xmlWriter.WriteStartElement("Folder");
+                    beginDocument();
 
                     fieldCount = csv.FieldCount;
                     headers = csv.GetFieldHeaders();
-
-                    point = "";
-                    isCoord = false;
 
                     for (int i = 0; i < fieldCount; i++)
                     {
@@ -129,12 +117,7 @@ namespace CSV_Converter
                         processRecord();
                     }
 
-                    xmlWriter.WriteEndElement(); //Folder
-                    xmlWriter.WriteEndElement(); //kml
-                    xmlWriter.WriteEndDocument();
-                    xmlWriter.Close();
-                    pBar.Value = pBar.Maximum;
-                    lblFeedback.Text = "File converted";
+                    finishDocument();
                 }
                 catch(IOException IOex)
                 {
@@ -157,6 +140,39 @@ namespace CSV_Converter
         //METHODS
         //=======
 
+        private void initializeVariables()
+        {
+            point = "";
+            isCoord = false;
+
+            recordsRead = 0; //dirty hack to get the ProgressBar working, hopefully with some measure of accuracy
+            pBar.Minimum = 0;
+            int steps = (int)new System.IO.FileInfo(input).Length / (kbPerStep * 1000);
+            pBar.Maximum = (steps > 1) ? steps : 2;
+            pBar.Value = 1;
+            pBar.Step = 1;
+            pBar.PerformStep(); //to at least let the user know their button press was accepted
+        }
+
+        private void beginDocument()
+        {
+            csv = new CsvReader(new StreamReader(input), true);
+            xmlWriter = XmlWriter.Create(output);
+            xmlWriter.WriteStartDocument();
+            xmlWriter.WriteStartElement("kml", "http://www.opengis.net/kml/2.2");
+            xmlWriter.WriteStartElement("Folder");
+        }
+
+        private void finishDocument()
+        {
+            xmlWriter.WriteEndElement(); //Folder
+            xmlWriter.WriteEndElement(); //kml
+            xmlWriter.WriteEndDocument();
+            xmlWriter.Close();
+            pBar.Value = pBar.Maximum;
+            lblFeedback.Text = "File converted";
+        }
+
         private void processRecord()
         {
             xmlWriter.WriteStartElement("Placemark");
@@ -167,6 +183,7 @@ namespace CSV_Converter
                 {
                     isCoord = headers[i].Contains(header) ? true : isCoord;
                     //considering breaking if match is found; especially if list becomes long
+
                     if( headers[i].Contains(header) ) { isCoord = true; }
                     else { break; }
                 }
