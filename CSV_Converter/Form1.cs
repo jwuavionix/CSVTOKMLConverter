@@ -133,6 +133,7 @@ namespace CSV_Converter
                     xmlWriter.WriteEndElement(); //kml
                     xmlWriter.WriteEndDocument();
                     xmlWriter.Close();
+                    pBar.Value = pBar.Maximum;
                     lblFeedback.Text = "File converted";
                 }
                 catch(IOException IOex)
@@ -155,7 +156,7 @@ namespace CSV_Converter
         //=======
         //METHODS
         //=======
-        
+
         private void processRecord()
         {
             xmlWriter.WriteStartElement("Placemark");
