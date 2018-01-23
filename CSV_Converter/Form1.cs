@@ -11,7 +11,8 @@ namespace CSV_Converter
     {
         //kml format does not allow for colons, and this array is used after they are converted to dashes
         //please change colons to dashes if you are adding possible coordinate header names to this list
-        String[] coordHeaders = {"GPS--Lat","GPS--Lon","GPS--Alt"};
+        String[] coordHeaders = { "GPS--Lat","GPS--Lon","GPS--Alt" };
+        String[] keyElements = { "Name", "Description", "Timestamp", "StyleURL", "Point" };
 
         //error messages
         String errCapFileAcc = "Error accessing file.";
@@ -31,9 +32,13 @@ namespace CSV_Converter
         XmlWriter xmlWriter;
         String[] headers;
         String input, output, filepath;
-        String point;
-        bool isCoord;
+        String name, desc, time, timestamp, style, point; //for storing data to be put in critical tags
+        DateTime t1;
+        bool isCoord; //replaced by dataType
+        String dataType;
         int fieldCount;
+
+
 
         public CsvToKmlConverter()
         {
@@ -108,6 +113,7 @@ namespace CSV_Converter
 
                     for (int i = 0; i < fieldCount; i++)
                     {
+
                         headers[i] = XmlConvert.EncodeName(headers[i]);
                         headers[i] = headers[i].Replace(":", "-");
                     }
@@ -140,20 +146,6 @@ namespace CSV_Converter
         //METHODS
         //=======
 
-        private void initializeVariables()
-        {
-            point = "";
-            isCoord = false;
-
-            recordsRead = 0; //dirty hack to get the ProgressBar working, hopefully with some measure of accuracy
-            pBar.Minimum = 0;
-            int steps = (int)new System.IO.FileInfo(input).Length / (kbPerStep * 1000);
-            pBar.Maximum = (steps > 1) ? steps : 2;
-            pBar.Value = 1;
-            pBar.Step = 1;
-            pBar.PerformStep(); //to at least let the user know their button press was accepted
-        }
-
         private void beginDocument()
         {
             csv = new CsvReader(new StreamReader(input), true);
@@ -173,26 +165,69 @@ namespace CSV_Converter
             lblFeedback.Text = "File converted";
         }
 
+        private void initializeVariables()
+        {
+            name = desc = time = point = "";
+            isCoord = false;
+
+            recordsRead = 0; //dirty hack to get the ProgressBar working, hopefully with some measure of accuracy
+            pBar.Minimum = 0;
+            int steps = (int)new System.IO.FileInfo(input).Length / (kbPerStep * 1000);
+            pBar.Maximum = (steps > 1) ? steps : 2;
+            pBar.Value = 1;
+            pBar.Step = 1;
+            pBar.PerformStep(); //to at least let the user know their button press was accepted
+        }
+
         private void processRecord()
         {
             xmlWriter.WriteStartElement("Placemark");
+            double seconds = 0;
 
             for (int i = 0; i < fieldCount; i++)
             {
-                foreach (String header in coordHeaders)
-                {
-                    isCoord = headers[i].Contains(header) ? true : isCoord;
-                    //considering breaking if match is found; especially if list becomes long
+                desc += headers[i] + ": " + csv[i] + "  <br>";
 
-                    if( headers[i].Contains(header) ) { isCoord = true; }
-                    else { break; }
+                //if coordinate
+                foreach (String coordName in coordHeaders)
+                {
+                    if ( headers[i].Contains(coordName) ) {
+                        dataType = "coord";
+                        break;
+                    }
+                }
+                
+                //if timestamp - assumes csv value will always be a straight number
+                if (!isCoord)
+                {
+                    if(headers[i].Contains("TimeStamp") && double.TryParse(csv[i], out seconds) ) { dataType = "time"; }
                 }
 
-                if (isCoord)
+                switch(dataType)
                 {
-                    point += csv[i] + ", ";
-                    isCoord = false;
+                    case "coord" :
+                        point += csv[i] + ", ";
+                        break;
+                    case "time" :
+                        timestamp = new DateTime().AddSeconds(seconds).ToString("o");
+                        timestamp = timestamp.Remove(timestamp.Length - 4);
+                        time = timestamp.Substring(11);
+                        break;
+                    default : break;
                 }
+                dataType = "";
+
+                /*
+                DateTime dt = new DateTime().AddMilliseconds(1512597795);
+                String initial = dt.ToString("o");
+                String shortened = initial.Remove(23, 4);
+
+                t1 = TimeSpan.FromMilliseconds(1512597795);
+                name = String.Format("{0:D2}:{1:D2}:{2:D2}.{3:D3}",
+                    t1.Hours,
+                    t1.Minutes,
+                    t1.Seconds,
+                    t1.Milliseconds);*/
 
                 try
                 {
@@ -229,8 +264,28 @@ namespace CSV_Converter
                 xmlWriter.WriteEndElement(); //Point
             }
 
+            //name = time, no need to have 2 variables for it
+
+            desc = time + "<br>" + desc;
+
+            xmlWriter.WriteElementString("name", time);
+
+            xmlWriter.WriteStartElement("description");
+            xmlWriter.WriteCData(desc);
+            xmlWriter.WriteEndElement(); //description
+
+            xmlWriter.WriteStartElement("TimeStamp");
+            xmlWriter.WriteElementString("when", timestamp);
+            xmlWriter.WriteEndElement(); //TimeStamp
+
+            xmlWriter.WriteElementString("styleUrl", "#pUAC");
+
+            xmlWriter.WriteStartElement("Point");
+            xmlWriter.WriteElementString("coordinates", point);
+            xmlWriter.WriteEndElement(); //Point
+
             xmlWriter.WriteEndElement(); //Placemark
-            point = "";
+            point = desc = "";
         } //end processRecord()
     }
 }
