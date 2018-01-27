@@ -32,7 +32,7 @@ namespace CSV_Converter
         XmlWriter xmlWriter;
         String[] headers;
         String input, output, filepath;
-        String name, desc, time, timestamp, style, point; //for storing data to be put in critical tags
+        String name, desc, time, timestamp, style, point, allCoords; //for storing data to be put in critical tags; allCoords stores list of all coordinates to add to EOF
         DateTime t1;
         bool isCoord; //replaced by dataType
         String dataType;
@@ -152,12 +152,15 @@ namespace CSV_Converter
             xmlWriter = XmlWriter.Create(output);
             xmlWriter.WriteStartDocument();
             xmlWriter.WriteStartElement("kml", "http://www.opengis.net/kml/2.2");
+            xmlWriter.WriteStartElement("Document");
             xmlWriter.WriteStartElement("Folder");
         }
-
+        
         private void finishDocument()
         {
             xmlWriter.WriteEndElement(); //Folder
+            writeAllCoords();
+            xmlWriter.WriteEndElement(); //Document
             xmlWriter.WriteEndElement(); //kml
             xmlWriter.WriteEndDocument();
             xmlWriter.Close();
@@ -176,7 +179,7 @@ namespace CSV_Converter
             pBar.Maximum = (steps > 1) ? steps : 2;
             pBar.Value = 1;
             pBar.Step = 1;
-            pBar.PerformStep(); //to at least let the user know their button press was accepted
+            pBar.PerformStep(); //before any actual progress; meant to at least let the user know their button press was accepted
         }
 
         private void processRecord()
@@ -191,17 +194,14 @@ namespace CSV_Converter
                 //if coordinate
                 foreach (String coordName in coordHeaders)
                 {
-                    if ( headers[i].Contains(coordName) ) {
-                        dataType = "coord";
-                        break;
-                    }
+                    if ( headers[i].Contains(coordName) ) { dataType = "coord"; break; }
                 }
                 
-                //if timestamp - assumes csv value will always be a straight number
-                if (!isCoord)
-                {
-                    if(headers[i].Contains("TimeStamp") && double.TryParse(csv[i], out seconds) ) { dataType = "time"; }
-                }
+                //if timestamp
+                if (dataType != "coord"
+                    && headers[i].Contains("TimeStamp")
+                    && double.TryParse(csv[i], out seconds) )
+                { dataType = "time"; }
 
                 switch(dataType)
                 {
@@ -259,8 +259,11 @@ namespace CSV_Converter
             if (point.Length > 2)
             {
                 point = point.Substring(0, point.Length - 2); //trim ending ", " from point
+
+                allCoords += point;
+
                 xmlWriter.WriteStartElement("Point");
-                xmlWriter.WriteElementString("Coordinates", point);
+                xmlWriter.WriteElementString("coordinates", point);
                 xmlWriter.WriteEndElement(); //Point
             }
 
@@ -287,5 +290,21 @@ namespace CSV_Converter
             xmlWriter.WriteEndElement(); //Placemark
             point = desc = "";
         } //end processRecord()
+
+        private void writeAllCoords()
+        {
+            xmlWriter.WriteStartElement("Placemark");
+            xmlWriter.WriteElementString("name", "UAT 3D GeoAlt [100ft Offset]");
+            xmlWriter.WriteElementString("styleUrl", "Style");
+
+            xmlWriter.WriteStartElement("LineString");
+            xmlWriter.WriteElementString("extrude", "1");
+            xmlWriter.WriteElementString("altitudeMode", "absolute");
+            xmlWriter.WriteElementString("coordinates", allCoords);
+            xmlWriter.WriteElementString("name", "3D");
+            xmlWriter.WriteEndElement(); //LineString
+            xmlWriter.WriteEndElement(); //Placemark
+        }
+
     }
 }
