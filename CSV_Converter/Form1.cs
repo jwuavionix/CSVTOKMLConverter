@@ -154,6 +154,7 @@ namespace CSV_Converter
             xmlWriter.WriteStartElement("kml", "http://www.opengis.net/kml/2.2");
             xmlWriter.WriteStartElement("Document");
             xmlWriter.WriteStartElement("Folder");
+            xmlWriter.WriteRaw("\n");
         }
         
         private void finishDocument()
@@ -162,6 +163,7 @@ namespace CSV_Converter
             writeAllCoords();
             xmlWriter.WriteEndElement(); //Document
             xmlWriter.WriteEndElement(); //kml
+            xmlWriter.WriteRaw("\n");
             xmlWriter.WriteEndDocument();
             xmlWriter.Close();
             pBar.Value = pBar.Maximum;
@@ -184,7 +186,9 @@ namespace CSV_Converter
 
         private void processRecord()
         {
+            xmlWriter.WriteRaw("\n");
             xmlWriter.WriteStartElement("Placemark");
+            xmlWriter.WriteRaw("\n");
             double seconds = 0;
 
             for (int i = 0; i < fieldCount; i++)
@@ -259,51 +263,71 @@ namespace CSV_Converter
             if (point.Length > 2)
             {
                 point = point.Substring(0, point.Length - 2); //trim ending ", " from point
-
-                allCoords += point;
-
-                xmlWriter.WriteStartElement("Point");
-                xmlWriter.WriteElementString("coordinates", point);
-                xmlWriter.WriteEndElement(); //Point
+                allCoords += point + " ";
             }
 
             //name = time, no need to have 2 variables for it
 
             desc = time + "<br>" + desc;
 
-            xmlWriter.WriteElementString("name", time);
+            if(time != "")
+            {
+                xmlWriter.WriteRaw("\n");
+                xmlWriter.WriteElementString("name", time);
+            }
 
-            xmlWriter.WriteStartElement("description");
-            xmlWriter.WriteCData(desc);
-            xmlWriter.WriteEndElement(); //description
+            if(desc != "")
+            {
+                xmlWriter.WriteRaw("\n");
+                xmlWriter.WriteStartElement("description");
+                xmlWriter.WriteCData(desc);
+                xmlWriter.WriteEndElement(); //description
+            }
 
-            xmlWriter.WriteStartElement("TimeStamp");
-            xmlWriter.WriteElementString("when", timestamp);
-            xmlWriter.WriteEndElement(); //TimeStamp
-
+            if (timestamp != "")
+            {
+                xmlWriter.WriteRaw("\n");
+                xmlWriter.WriteStartElement("TimeStamp");
+                xmlWriter.WriteElementString("when", timestamp);
+                xmlWriter.WriteEndElement(); //TimeStamp
+                xmlWriter.WriteRaw("\n");
+            }
+            
             xmlWriter.WriteElementString("styleUrl", "#pUAC");
+            xmlWriter.WriteRaw("\n");
 
-            xmlWriter.WriteStartElement("Point");
-            xmlWriter.WriteElementString("coordinates", point);
-            xmlWriter.WriteEndElement(); //Point
+            if(point != "")
+            {
+                xmlWriter.WriteStartElement("Point");
+                xmlWriter.WriteElementString("coordinates", point);
+                xmlWriter.WriteEndElement(); //Point
+                xmlWriter.WriteRaw("\n");
+            }
 
             xmlWriter.WriteEndElement(); //Placemark
+            xmlWriter.WriteRaw("\n");
             point = desc = "";
         } //end processRecord()
 
         private void writeAllCoords()
         {
+            xmlWriter.WriteRaw("\n");
             xmlWriter.WriteStartElement("Placemark");
+            xmlWriter.WriteRaw("\n");
             xmlWriter.WriteElementString("name", "UAT 3D GeoAlt [100ft Offset]");
             xmlWriter.WriteElementString("styleUrl", "Style");
 
+            xmlWriter.WriteRaw("\n");
             xmlWriter.WriteStartElement("LineString");
             xmlWriter.WriteElementString("extrude", "1");
             xmlWriter.WriteElementString("altitudeMode", "absolute");
+            xmlWriter.WriteRaw("\n");
             xmlWriter.WriteElementString("coordinates", allCoords);
+            xmlWriter.WriteRaw("\n");
             xmlWriter.WriteElementString("name", "3D");
             xmlWriter.WriteEndElement(); //LineString
             xmlWriter.WriteEndElement(); //Placemark
+            xmlWriter.WriteRaw("\n");
         }
 
     }
