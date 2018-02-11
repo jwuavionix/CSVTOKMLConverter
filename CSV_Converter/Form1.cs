@@ -11,8 +11,23 @@ namespace CSV_Converter
     {
         //kml format does not allow for colons, and this array is used after they are converted to dashes
         //please change colons to dashes if you are adding possible coordinate header names to this list
-        String[] coordHeaders = { "GPS--Lat","GPS--Lon","GPS--Alt" };
+        //String[] coordHeaders = { "gps--lat", "gps--lon", "gps--alt" };
+        String[] coordHeaders = { "lat", "lon", "alt" };
         String[] keyElements = { "Name", "Description", "Timestamp", "StyleURL", "Point" };
+
+        //styling of icon used by Google Earth to display Placemarks
+        String pmStyleNameNormal = "psUAT_AirborneCompliant_Normal";
+        String pmStyleNameHover = "psUAT_AirborneCompliant_Highlight";
+        String pmColor = "ff00ffff";
+        String pmIconSizeNormal = "0.275";
+        String pmIconSizeHover = "0.4";
+        String pmIcon = "http://maps.google.com/mapfiles/kml/pal2/icon26.png";
+        String pmLabelSizeNormal = "0";
+        String pmLabelSizeHover = "0.75";
+        String pmBalloonStyle = "<p align=\"left\" style=\"white - space:nowrap); \"><font size=\" + 1\"><b>$[name]</b></font></p><p align=\"left\">$[description]</p>";
+        String pmStyleID = "pUAC";
+        String pmStyleURLNormal = "#psUAT_AirborneCompliant_Normal";
+        String pmStyleURLHover = "#psUAT_AirborneCompliant_Highlight";
 
         //error messages
         String errCapFileAcc = "Error accessing file.";
@@ -25,7 +40,7 @@ namespace CSV_Converter
 
         //ProgressBar tinkering
         int filesPerKB = 15; //obtained by dividing number of records by filesize in KB
-        int kbPerStep = 100; //obtained arbitrarily
+        int kbPerStep = 100; //affects "resolution" of progress bar
         int recordsRead; //dirty hack to get the ProgressBar working, hopefully with some measure of accuracy
 
         CsvReader csv;
@@ -33,8 +48,9 @@ namespace CSV_Converter
         String[] headers;
         String input, output, filepath;
         String name, desc, time, timestamp, style, point, allCoords; //for storing data to be put in critical tags; allCoords stores list of all coordinates to add to EOF
-        DateTime t1;
-        bool isCoord; //replaced by dataType
+        //int timeIndex, latIndex, lonIndex, altIndex;  //planning a change from how field types are currently determined (i.e., coordinates, timestamp)
+        //DateTime t1;
+        //bool isCoord; //replaced by dataType
         String dataType;
         int fieldCount;
 
@@ -113,7 +129,7 @@ namespace CSV_Converter
 
                     for (int i = 0; i < fieldCount; i++)
                     {
-
+                        headers[i] = headers[i].ToLower();
                         headers[i] = XmlConvert.EncodeName(headers[i]);
                         headers[i] = headers[i].Replace(":", "-");
                     }
@@ -146,13 +162,59 @@ namespace CSV_Converter
         //METHODS
         //=======
 
+        private void writeStylingHeaders(String name, String color, String iconSize, String icon, String labelSize, String bStyle)
+        {
+            xmlWriter.WriteRaw("\n"); xmlWriter.WriteStartElement("Style", "id=" + name);
+            xmlWriter.WriteRaw("\n"); xmlWriter.WriteStartElement("IconStyle");
+            xmlWriter.WriteRaw("\n"); xmlWriter.WriteStartElement("Color");
+            xmlWriter.WriteRaw(color); xmlWriter.WriteEndElement(); //Color
+
+            xmlWriter.WriteRaw("\n"); xmlWriter.WriteStartElement("Scale");
+            xmlWriter.WriteRaw(iconSize); xmlWriter.WriteEndElement(); //Scale
+
+            xmlWriter.WriteRaw("\n"); xmlWriter.WriteStartElement("Icon");
+            xmlWriter.WriteRaw("\n"); xmlWriter.WriteStartElement("href");
+            xmlWriter.WriteRaw(icon); xmlWriter.WriteEndElement(); //href
+
+            xmlWriter.WriteRaw("\n"); xmlWriter.WriteEndElement(); //Icon
+            xmlWriter.WriteRaw("\n"); xmlWriter.WriteEndElement(); //IconStyle
+            xmlWriter.WriteRaw("\n"); xmlWriter.WriteStartElement("LabelStyle");
+            xmlWriter.WriteRaw("\n"); xmlWriter.WriteStartElement("Scale");
+            xmlWriter.WriteRaw(labelSize); xmlWriter.WriteEndElement(); //Scale
+
+            xmlWriter.WriteRaw("\n"); xmlWriter.WriteEndElement(); //LabelStyle
+            xmlWriter.WriteRaw("\n"); xmlWriter.WriteStartElement("BalloonStyle");
+            xmlWriter.WriteRaw("\n"); xmlWriter.WriteStartElement("Text");
+            xmlWriter.WriteRaw("\n"); xmlWriter.WriteCData(bStyle);
+            xmlWriter.WriteRaw("\n"); xmlWriter.WriteEndElement(); //Text
+            xmlWriter.WriteRaw("\n"); xmlWriter.WriteEndElement(); //BalloonStyle
+            xmlWriter.WriteRaw("\n"); xmlWriter.WriteEndElement(); //Style
+            xmlWriter.WriteRaw("\n");
+        }
+
+        private void writeStylingHeaders(String id, String urlNormal, String urlHover)
+        {
+            xmlWriter.WriteRaw("\n"); xmlWriter.WriteStartElement("StyleMap", "id=" + pmStyleID);
+        }
         private void beginDocument()
         {
             csv = new CsvReader(new StreamReader(input), true);
             xmlWriter = XmlWriter.Create(output);
             xmlWriter.WriteStartDocument();
+            xmlWriter.WriteRaw("\n");
             xmlWriter.WriteStartElement("kml", "http://www.opengis.net/kml/2.2");
+            xmlWriter.WriteRaw("\n");
             xmlWriter.WriteStartElement("Document");
+            xmlWriter.WriteRaw("\n");
+            xmlWriter.WriteElementString("name", Path.GetFileNameWithoutExtension(input));
+            xmlWriter.WriteRaw("\n");
+            xmlWriter.WriteElementString("open", "1");
+            xmlWriter.WriteRaw("\n");
+
+            writeStylingHeaders(pmStyleNameNormal, pmColor, pmIconSizeNormal, pmIcon, pmLabelSizeNormal, pmBalloonStyle);
+            writeStylingHeaders(pmStyleNameHover,  pmColor, pmIconSizeHover,  pmIcon, pmLabelSizeHover,  pmBalloonStyle);
+
+            xmlWriter.WriteRaw("\n");
             xmlWriter.WriteStartElement("Folder");
             xmlWriter.WriteRaw("\n");
         }
@@ -173,7 +235,7 @@ namespace CSV_Converter
         private void initializeVariables()
         {
             name = desc = time = point = "";
-            isCoord = false;
+            //isCoord = false;
 
             recordsRead = 0; //dirty hack to get the ProgressBar working, hopefully with some measure of accuracy
             pBar.Minimum = 0;
@@ -193,6 +255,7 @@ namespace CSV_Converter
 
             for (int i = 0; i < fieldCount; i++)
             {
+                dataType = "";
                 desc += headers[i] + ": " + csv[i] + "  <br>";
 
                 //if coordinate
@@ -203,7 +266,7 @@ namespace CSV_Converter
                 
                 //if timestamp
                 if (dataType != "coord"
-                    && headers[i].Contains("TimeStamp")
+                    && headers[i].Contains("timestamp")
                     && double.TryParse(csv[i], out seconds) )
                 { dataType = "time"; }
 
@@ -214,12 +277,12 @@ namespace CSV_Converter
                         break;
                     case "time" :
                         timestamp = new DateTime().AddSeconds(seconds).ToString("o");
+                        //timestamp = new DateTime((long)seconds).ToString("o");
                         timestamp = timestamp.Remove(timestamp.Length - 4);
                         time = timestamp.Substring(11);
                         break;
                     default : break;
                 }
-                dataType = "";
 
                 /*
                 DateTime dt = new DateTime().AddMilliseconds(1512597795);
@@ -235,7 +298,7 @@ namespace CSV_Converter
 
                 try
                 {
-                    xmlWriter.WriteElementString(headers[i], csv[i]);
+                    if( dataType == "" ) { xmlWriter.WriteElementString(headers[i], csv[i]); }
                 }
                 catch (ArgumentException argEx)
                 {
@@ -308,6 +371,7 @@ namespace CSV_Converter
             xmlWriter.WriteRaw("\n");
             point = desc = "";
         } //end processRecord()
+
 
         private void writeAllCoords()
         {
