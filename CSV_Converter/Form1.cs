@@ -15,21 +15,34 @@ namespace CSV_Converter
         String[] coordHeaders = { "lat", "lon", "alt" };
         String[] keyElements = { "Name", "Description", "Timestamp", "StyleURL", "Point" };
 
-        //styling of icon used by Google Earth to display Placemarks
-        String pmStyleNameNormal = "psUAT_AirborneCompliant_Normal";
-        String pmStyleNameHover = "psUAT_AirborneCompliant_Highlight";
+        //DYNAMIC PLACEMARK ICON STYLING
+        //normal and hover
         String pmColor = "ff00ffff";
-        String pmIconSizeNormal = "0.275";
-        String pmIconSizeHover = "0.4";
         String pmIcon = "http://maps.google.com/mapfiles/kml/pal2/icon26.png";
-        String pmLabelSizeNormal = "0";
-        String pmLabelSizeHover = "0.75";
         String pmBalloonStyle = "<p align=\"left\" style=\"white - space:nowrap); \"><font size=\" + 1\"><b>$[name]</b></font></p><p align=\"left\">$[description]</p>";
+        //normal
+        String pmLabelSizeNormal = "0";
+        String pmStyleNameNormal = "psUAT_AirborneCompliant_Normal";
+        String pmIconSizeNormal = "0.275";
+        String pmKeyNormal = "normal";
+        //on hover
+        String pmLabelSizeHover = "0.75";
+        String pmStyleNameHover = "psUAT_AirborneCompliant_Highlight";
+        String pmIconSizeHover = "0.4";
+        String pmKeyHover = "hover";
+        //StyleMap, linking styles for normal and hover states
         String pmStyleID = "pUAC";
         String pmStyleURLNormal = "#psUAT_AirborneCompliant_Normal";
         String pmStyleURLHover = "#psUAT_AirborneCompliant_Highlight";
 
-        //error messages
+        //MISC USER-FACING PROPERTIES
+        String folderName = "Placemarks";
+        String defaultToOpen = "1"; //1 to set folder to open by default on load into Google Earth
+        String listItemType = "checkHideChildren";
+        String bgColor = "00ffffff";
+        String maxSnippets = "2";
+
+        //ERROR MESSAGES
         String errCapFileAcc = "Error accessing file.";
         String errMsgFileUnavailable = "Cannot access file. May be in use or no longer available. Please check and try again.\n\nError code: ";
         String errMsgFilePriv = "Cannot access file. Insufficient read-write privileges. Please check and try again.\n\nError code: ";
@@ -38,11 +51,12 @@ namespace CSV_Converter
         String errCapUnknown = "Unknown error.";
         String errMsgUnknown = "Unknown error. Aborting conversion.\n\nError code: ";
 
-        //ProgressBar tinkering
+        //PROGRESS BAR FINE TUNING
         int filesPerKB = 15; //obtained by dividing number of records by filesize in KB
         int kbPerStep = 100; //affects "resolution" of progress bar
         int recordsRead; //dirty hack to get the ProgressBar working, hopefully with some measure of accuracy
 
+        //RUNTIME VARIABLES
         CsvReader csv;
         XmlWriter xmlWriter;
         String[] headers;
@@ -164,59 +178,95 @@ namespace CSV_Converter
 
         private void writeStylingHeaders(String name, String color, String iconSize, String icon, String labelSize, String bStyle)
         {
-            xmlWriter.WriteRaw("\n"); xmlWriter.WriteStartElement("Style", "id=" + name);
-            xmlWriter.WriteRaw("\n"); xmlWriter.WriteStartElement("IconStyle");
-            xmlWriter.WriteRaw("\n"); xmlWriter.WriteStartElement("Color");
-            xmlWriter.WriteRaw(color); xmlWriter.WriteEndElement(); //Color
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteStartElement("Style");
+                                        xmlWriter.WriteAttributeString("id", name);
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteStartElement("IconStyle");
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteStartElement("Color");
+                                        xmlWriter.WriteRaw(color);
+                                        xmlWriter.WriteEndElement(); //Color
 
-            xmlWriter.WriteRaw("\n"); xmlWriter.WriteStartElement("Scale");
-            xmlWriter.WriteRaw(iconSize); xmlWriter.WriteEndElement(); //Scale
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteStartElement("Scale");
+                                        xmlWriter.WriteRaw(iconSize);
+                                        xmlWriter.WriteEndElement(); //Scale
 
-            xmlWriter.WriteRaw("\n"); xmlWriter.WriteStartElement("Icon");
-            xmlWriter.WriteRaw("\n"); xmlWriter.WriteStartElement("href");
-            xmlWriter.WriteRaw(icon); xmlWriter.WriteEndElement(); //href
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteStartElement("Icon");
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteStartElement("href");
+                                        xmlWriter.WriteRaw(icon);
+                                        xmlWriter.WriteEndElement(); //href
 
-            xmlWriter.WriteRaw("\n"); xmlWriter.WriteEndElement(); //Icon
-            xmlWriter.WriteRaw("\n"); xmlWriter.WriteEndElement(); //IconStyle
-            xmlWriter.WriteRaw("\n"); xmlWriter.WriteStartElement("LabelStyle");
-            xmlWriter.WriteRaw("\n"); xmlWriter.WriteStartElement("Scale");
-            xmlWriter.WriteRaw(labelSize); xmlWriter.WriteEndElement(); //Scale
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteEndElement(); //Icon
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteEndElement(); //IconStyle
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteStartElement("LabelStyle");
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteStartElement("Scale");
+                                        xmlWriter.WriteRaw(labelSize);
+                                        xmlWriter.WriteEndElement(); //Scale
 
-            xmlWriter.WriteRaw("\n"); xmlWriter.WriteEndElement(); //LabelStyle
-            xmlWriter.WriteRaw("\n"); xmlWriter.WriteStartElement("BalloonStyle");
-            xmlWriter.WriteRaw("\n"); xmlWriter.WriteStartElement("Text");
-            xmlWriter.WriteRaw("\n"); xmlWriter.WriteCData(bStyle);
-            xmlWriter.WriteRaw("\n"); xmlWriter.WriteEndElement(); //Text
-            xmlWriter.WriteRaw("\n"); xmlWriter.WriteEndElement(); //BalloonStyle
-            xmlWriter.WriteRaw("\n"); xmlWriter.WriteEndElement(); //Style
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteEndElement(); //LabelStyle
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteStartElement("BalloonStyle");
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteStartElement("Text");
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteCData(bStyle);
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteEndElement(); //Text
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteEndElement(); //BalloonStyle
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteEndElement(); //Style
             xmlWriter.WriteRaw("\n");
         }
 
-        private void writeStylingHeaders(String id, String urlNormal, String urlHover)
+        //for the <StyleMap> element that links the <Style> elements
+        private void writeStylingHeaders(String key, String url)
         {
-            xmlWriter.WriteRaw("\n"); xmlWriter.WriteStartElement("StyleMap", "id=" + pmStyleID);
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteStartElement("Pair");
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteStartElement("Key");
+                                        xmlWriter.WriteRaw(key);
+                                        xmlWriter.WriteEndElement(); //Key
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteStartElement("StyleUrl");
+                                        xmlWriter.WriteRaw(url);
+                                        xmlWriter.WriteEndElement(); //StyleUrl
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteEndElement(); //Pair
         }
+
         private void beginDocument()
         {
             csv = new CsvReader(new StreamReader(input), true);
             xmlWriter = XmlWriter.Create(output);
             xmlWriter.WriteStartDocument();
-            xmlWriter.WriteRaw("\n");
-            xmlWriter.WriteStartElement("kml", "http://www.opengis.net/kml/2.2");
-            xmlWriter.WriteRaw("\n");
-            xmlWriter.WriteStartElement("Document");
-            xmlWriter.WriteRaw("\n");
-            xmlWriter.WriteElementString("name", Path.GetFileNameWithoutExtension(input));
-            xmlWriter.WriteRaw("\n");
-            xmlWriter.WriteElementString("open", "1");
+            xmlWriter.WriteRaw("\n");       xmlWriter.WriteStartElement("kml", "http://www.opengis.net/kml/2.2");
+
+            xmlWriter.WriteRaw("\n\n\n"); xmlWriter.WriteStartElement("Document");
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteElementString("name", Path.GetFileNameWithoutExtension(input));
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteElementString("open", defaultToOpen);
             xmlWriter.WriteRaw("\n");
 
             writeStylingHeaders(pmStyleNameNormal, pmColor, pmIconSizeNormal, pmIcon, pmLabelSizeNormal, pmBalloonStyle);
             writeStylingHeaders(pmStyleNameHover,  pmColor, pmIconSizeHover,  pmIcon, pmLabelSizeHover,  pmBalloonStyle);
 
-            xmlWriter.WriteRaw("\n");
-            xmlWriter.WriteStartElement("Folder");
-            xmlWriter.WriteRaw("\n");
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteStartElement("StyleMap");
+                                        xmlWriter.WriteAttributeString("id", pmStyleID);
+                        writeStylingHeaders(pmKeyNormal, pmStyleURLNormal);
+                        writeStylingHeaders(pmKeyHover,  pmStyleURLHover);
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteEndElement(); //StyleMap
+            
+
+
+            xmlWriter.WriteRaw("\n\n\n"); xmlWriter.WriteStartElement("Folder");
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteStartElement("name");
+                                        xmlWriter.WriteRaw(folderName);
+                                        xmlWriter.WriteEndElement(); //Name
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteStartElement("open");
+                                        xmlWriter.WriteRaw(defaultToOpen);
+                                        xmlWriter.WriteEndElement(); //open
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteStartElement("Style");
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteStartElement("ListStyle");
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteStartElement("listItemType");
+                                        xmlWriter.WriteRaw(listItemType);
+                                        xmlWriter.WriteEndElement(); //listItemType
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteStartElement("bgColor");
+                                        xmlWriter.WriteRaw(bgColor);
+                                        xmlWriter.WriteEndElement(); //bgColor
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteStartElement("maxSnippetLines");
+                                        xmlWriter.WriteRaw(maxSnippets);
+                                        xmlWriter.WriteEndElement(); //maxSnippetLines
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteEndElement(); //ListStyle
+            xmlWriter.WriteRaw("\n");   xmlWriter.WriteEndElement(); //Style
         }
         
         private void finishDocument()
@@ -273,7 +323,7 @@ namespace CSV_Converter
                 switch(dataType)
                 {
                     case "coord" :
-                        point += csv[i] + ", ";
+                        point += csv[i] + ",";
                         break;
                     case "time" :
                         timestamp = new DateTime().AddSeconds(seconds).ToString("o");
@@ -325,7 +375,7 @@ namespace CSV_Converter
 
             if (point.Length > 2)
             {
-                point = point.Substring(0, point.Length - 2); //trim ending ", " from point
+                point = point.Substring(0, point.Length - 1); //trim ending "," from point
                 allCoords += point + " ";
             }
 
