@@ -42,9 +42,11 @@
             this.pBar = new System.Windows.Forms.ProgressBar();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.tsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsMenuOutfileNaming = new System.Windows.Forms.ToolStripMenuItem();
             this.tsMenuExit = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsAbout = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsHelp = new System.Windows.Forms.ToolStripMenuItem();
             this.btnClear = new System.Windows.Forms.Button();
+            this.tsHelpAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -143,7 +145,7 @@
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsMenu,
-            this.tsAbout});
+            this.tsHelp});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(492, 24);
@@ -153,24 +155,33 @@
             // tsMenu
             // 
             this.tsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsMenuOutfileNaming,
             this.tsMenuExit});
             this.tsMenu.Name = "tsMenu";
             this.tsMenu.Size = new System.Drawing.Size(50, 20);
             this.tsMenu.Text = "Menu";
             // 
+            // tsMenuOutfileNaming
+            // 
+            this.tsMenuOutfileNaming.Name = "tsMenuOutfileNaming";
+            this.tsMenuOutfileNaming.Size = new System.Drawing.Size(215, 22);
+            this.tsMenuOutfileNaming.Text = "Output File based on Input";
+            this.tsMenuOutfileNaming.Click += new System.EventHandler(this.tsMenuOutfileNaming_Click);
+            // 
             // tsMenuExit
             // 
             this.tsMenuExit.Name = "tsMenuExit";
-            this.tsMenuExit.Size = new System.Drawing.Size(92, 22);
+            this.tsMenuExit.Size = new System.Drawing.Size(215, 22);
             this.tsMenuExit.Text = "Exit";
             this.tsMenuExit.Click += new System.EventHandler(this.tsMenuExit_Click);
             // 
-            // tsAbout
+            // tsHelp
             // 
-            this.tsAbout.Name = "tsAbout";
-            this.tsAbout.Size = new System.Drawing.Size(52, 20);
-            this.tsAbout.Text = "About";
-            this.tsAbout.Click += new System.EventHandler(this.tsAbout_Click);
+            this.tsHelp.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsHelpAbout});
+            this.tsHelp.Name = "tsHelp";
+            this.tsHelp.Size = new System.Drawing.Size(44, 20);
+            this.tsHelp.Text = "Help";
             // 
             // btnClear
             // 
@@ -181,6 +192,13 @@
             this.btnClear.Text = "Clear";
             this.btnClear.UseVisualStyleBackColor = true;
             this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
+            // 
+            // tsHelpAbout
+            // 
+            this.tsHelpAbout.Name = "tsHelpAbout";
+            this.tsHelpAbout.Size = new System.Drawing.Size(152, 22);
+            this.tsHelpAbout.Text = "About";
+            this.tsHelpAbout.Click += new System.EventHandler(this.tsHelpAbout_Click);
             // 
             // CsvToKmlConverter
             // 
@@ -224,9 +242,11 @@
         private System.Windows.Forms.ProgressBar pBar;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem tsMenu;
-        private System.Windows.Forms.ToolStripMenuItem tsAbout;
         private System.Windows.Forms.ToolStripMenuItem tsMenuExit;
         private System.Windows.Forms.Button btnClear;
+        private System.Windows.Forms.ToolStripMenuItem tsMenuOutfileNaming;
+        private System.Windows.Forms.ToolStripMenuItem tsHelp;
+        private System.Windows.Forms.ToolStripMenuItem tsHelpAbout;
     }
 }
 
